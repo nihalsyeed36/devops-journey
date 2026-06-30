@@ -1,0 +1,5 @@
+FILE="/opt/tomcat/logs/catalina.out"
+echo "${FILE}"
+echo "${FILE##*/}"
+echo "${FILE%/*}"
+echo "${FILE%.out}"
