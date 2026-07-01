@@ -1,1 +1,8 @@
 Devops
+Linux
+Bash
+Git
+Containers
+Orchestration
+CI/CD
+AI enabled
