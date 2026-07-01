@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#author:syy1cob
 # 1. Define the list of domains
 DOMAINS="google.com github.com fake-website-xyz.org"
 
