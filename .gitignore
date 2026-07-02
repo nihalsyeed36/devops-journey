@@ -1,4 +1,4 @@
-# ── SECRETS — NEVER commit these ────────────────────────────────────────
+#-── SECRETS — NEVER commit these ────────────────────────────────────────
 *.pem                   # SSL private keys
 *.key                   # private keys of any kind
 *.p12                   # PKCS12 keystores
