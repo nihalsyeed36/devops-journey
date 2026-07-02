@@ -6,3 +6,4 @@ Containers
 Orchestration
 CI/CD
 AI enabled
+Finops
