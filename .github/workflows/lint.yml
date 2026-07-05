@@ -1,0 +1,42 @@
+name: Lint & Validate Scripts
+ 
+on:
+  push:
+    branches: [ main, 'feature/**' ]
+  pull_request:
+    branches: [ main ]
+ 
+jobs:
+  shellcheck:
+    name: ShellCheck (Bash Linting)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+ 
+      - name: Run ShellCheck on all bash scripts
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: './01-bash-scripts'
+          severity: warning
+          format: tty
+ 
+  validate-structure:
+    name: Validate Repo Structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+ 
+      - name: Check required files exist
+        run: |
+          test -f README.md || { echo "ERROR: README.md missing"; exit 1; }
+          test -f .gitignore || { echo "ERROR: .gitignore missing"; exit 1; }
+          test -d 01-bash-scripts || { echo "ERROR: 01-bash-scripts/ missing"; exit 1; }
+          echo "All required files present"
+ 
+      - name: Check scripts are executable
+        run: |
+          for script in 01-bash-scripts/*.sh; do
+            test -x "$script" || { echo "ERROR: $script is not executable"; exit 1; }
+          done
+          echo "All scripts are executable"
