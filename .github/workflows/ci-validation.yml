@@ -1,0 +1,35 @@
+name: DevOps Automation Quality Gate
+
+# 1. Trigger the pipeline on pushes or PRs targeting main
+on:
+  push:
+    branches: [ main, staging ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-scripts:
+    name: Shell Script Syntax Checker
+    runs-on: ubuntu-latest # Using a standard GitHub cloud-hosted Linux runner
+
+    steps:
+      # Step 1: Download a copy of your repository files onto the runner machine
+      - name: Fetch Code Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up a ShellCheck scanner environment
+      - name: Run ShellCheck Validation
+        uses: ludeeus/action-shellcheck@master
+        with:
+          ignore_paths: node_modules/ # Skip directories that don't need script checks
+
+      # Step 3: Run a custom sanity check script
+      - name: Execute Custom Repository Structure Test
+        run: |
+          echo "🚀 Verification Step: Checking if bash subdirectory structure exists..."
+          if [ -d "bash" ]; then
+            echo "✅ Bash subdirectory structure looks clean!"
+          else
+            echo "❌ ERROR: Missing target 'bash' directory!"
+            exit 1
+          fi
