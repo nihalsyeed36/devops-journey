@@ -1,7 +1,7 @@
 # My DevOps Journey
  
 Hands-on learning repository documenting my transformation from Azure Operations Lead
-to Senior DevOps Engineer / AI DevOps Architect.
+to Senior DevOps Engineer / AI DevOps Architect role.
  
 ## Progress
  
