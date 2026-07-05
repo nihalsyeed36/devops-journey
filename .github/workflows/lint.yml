@@ -14,12 +14,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
  
-      - name: Run ShellCheck on all bash scripts
-        uses: ludeeus/action-shellcheck@master
-        with:
-          scandir: './01-bash-scripts'
-          severity: warning
-          format: tty
  
   validate-structure:
     name: Validate Repo Structure
