@@ -1,0 +1,29 @@
+Cgroups and namespaces are the two kernel mechanisms that actually make containers possible — everything we've discussed (processes, PIDs, signals) still applies inside a container; these two features just wrap around a normal process to make it feel isolated and resource-limited.
+Namespaces — control what a process can see
+A namespace gives a process its own private view of some global resource, so it appears alone even on a shared host:
+
+PID namespace — the container's first process becomes PID 1 inside its own namespace, even though it's an ordinary PID on the host (as we saw with containerd-shim).
+Network namespace — the container gets its own network interfaces, IP address, and routing table.
+Mount namespace — its own filesystem view (so / inside the container isn't RHEL's real /).
+UTS namespace — its own hostname, independent of the host's.
+IPC namespace — its own message queues/semaphores, isolated from other processes.
+
+Cgroups — control what a process can use
+Where namespaces hide things, control groups (cgroups) meter and cap things: CPU quota, memory ceiling, I/O bandwidth. This is the exact mechanism systemd uses under the hood for every service unit — Docker just reuses it per container.
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.25s;
+    animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+  }
+VvisualizeVvisualize show_widgetNow let's look at where these limits actually live on a RHEL host's filesystem — because on modern RHEL (cgroup v2, systemd as the cgroup manager), Docker doesn't create its own separate hierarchy. It plugs into systemd's existing tree.
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.25s;
+    animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+  }
+VvisualizeVvisualize show_widgetThis is the direct, literal mechanism behind flags like docker run --cpus 0.5 -m 512m — those values aren't enforced by some Docker-specific magic; they get written straight into cgroup control files (cpu.max, memory.max) inside docker-<id>.scope, which the kernel scheduler and memory manager honor exactly like any other cgroup on the system.
+Bringing this back to a corporate scenario: a team notices one microservice container getting OOM-killed repeatedly in production. Instead of guessing, an SRE runs:
+systemd-cgls          # visually walk the cgroup tree
+cat /sys/fs/cgroup/system.slice/docker-<id>.scope/memory.max

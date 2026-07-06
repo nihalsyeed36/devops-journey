@@ -1,0 +1,62 @@
+📘 DEFINITION: Process
+A running instance of a program. Every command you run, every service started — all are processes. Each has a unique Process ID (PID), a parent PID (PPID), an owner (UID), and a state (running, sleeping, zombie, etc.).
+Real-world: When Tomcat stops responding, you need to find its PID, check its state, examine memory/CPU usage, check its logs, and either restart or kill it — all from the CLI.
+Every thing in linux will have a process . Example : systemctl stop docker ? -> docker is a software which will create containers ? its a highlevel, but in the backend , for each command it was developed with backedn linux commands to do the action. System stop docker is similar to kill -12 docker process actually the systemctl executes it in background for us
+
+State Code	Meaning
+R — Running	Actively executing on CPU or waiting in run queue
+S — Sleeping	Waiting for I/O or signal — normal idle state for most services
+D — Uninterruptible Sleep	Waiting for disk/network I/O — CANNOT be killed with -9. Often signals a disk or NFS hang
+Z — Zombie	Process finished but parent has not read its exit status. Shows as 'defunct'. Cannot be killed — kill parent
+T — Stopped	Paused via Ctrl+Z or SIGSTOP. Resume with: fg or kill -CONT <pid>
+
+Always systemd is the parent process system, when server turns on this the first process with pid , others are its child , its parent process of all , but indirect parent process as well 
+systemd
+ ├── sshd
+ │    └── bash
+ │         └── vi
+ ├── crond
+ ├── rsyslogd
+ ├── tomcat
+ └── java
+
+# ── VIEWING PROCESSES ──────────────────────────────────────────────────
+ps aux                         # all processes (a=all users, u=user format, x=no TTY required)
+ps aux | grep tomcat           # find tomcat process
+ps -ef | grep nginx            # shows PPID (parent PID) column
+ps -ef --forest                # ASCII tree showing parent-child relationships
+ps aux --sort=-%cpu | head -10 # top 10 by CPU usage
+ps aux --sort=-%mem | head -10 # top 10 by memory usage
+ 
+# Reading ps aux output columns:
+# USER    PID  %CPU %MEM    VSZ     RSS   TTY  STAT START   TIME  COMMAND
+# tomcat  1234  2.1  8.3  2048000  340000  ?   Sl   08:00  12:34  java -jar tomcat.jar
+# VSZ = virtual memory, RSS = actual RAM used
+ 
+# ── FINDING A PROCESS BY PORT ────────────────────────────────────────────
+ss -tlnp | grep 8080           # which process listens on port 8080?
+lsof -i :8080                  # more detail: PID, user, command
+fuser 8080/tcp                 # just print the PID
+ 
+# ── KILLING PROCESSES ────────────────────────────────────────────────────
+kill 1234                      # SIGTERM (15) — polite "please stop" — allows cleanup
+kill -9 1234                   # SIGKILL — force kill — no cleanup, no chance to save state
+kill -HUP 1234                 # SIGHUP — "reload config" (nginx, sshd use this)
+pkill tomcat                   # kill by name (SIGTERM)
+pkill -9 -f "java.*tomcat"     # kill matching full command pattern
+killall nginx                  # kill all processes named nginx
+ 
+# SIGTERM vs SIGKILL — ALWAYS try SIGTERM first. Tomcat needs SIGTERM to:
+# - close database connections, flush buffers, release locks, finish requests
+# Only use SIGKILL if SIGTERM doesn't work after ~30 seconds.
+ 
+# ── ZOMBIE PROCESSES ──────────────────────────────────────────────────────
+ps aux | awk '$8=="Z"'         # find zombie processes
+# Zombies cannot be killed — they are already dead. Kill their PARENT.
+ps -eo pid,ppid,stat,comm | awk '$3~/Z/{print "zombie:",$1,"parent:",$2}'
+ 
+# ── PROCESS PRIORITY (NICE) ───────────────────────────────────────────────
+nice -n 10 ./cpu-heavy.sh      # start with lower priority (19=lowest, -20=highest)
+renice -n 5 -p 1234            # change running process priority
+renice -n -5 -p $(pgrep tomcat) # give tomcat higher priority
+

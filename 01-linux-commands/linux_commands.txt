@@ -1,0 +1,22 @@
+ls -la /                              # list root directory with permissions
+ls -la /etc | head -20                # see first 20 config files
+cat /etc/os-release                   # what Linux distro and version?
+cat /etc/hostname                     # VM's hostname
+cat /etc/hosts                        # local DNS entries (Kubernetes uses this heavily, its like a address book, if I put ping google.com , the system first checks this hosts file and see if google.com and its ip is mentioned , if yes it will resolve , if not it will request the DNS server in organization and check if its there , converting names to IP addresses , /etc/hosts is having hosts and ip ranges ,/etc/resolv.conf also does same but it has details of DNS server and its ip , if /etc/hosts doesn’t know , it will ask DNS server mentioned in resolv.conf)
+ 
+# /proc — read live kernel data without touching disk , it’s a virtual memory , not on disk. All the commands like top , free , gets the information from this /proc , Kernel exposes its system information through this setup. Users/commands can fetch this info from /proc
+
+cat /proc/cpuinfo | grep "model name" | head -1   # CPU model
+cat /proc/meminfo | grep -E "MemTotal|MemFree|MemAvailable"
+cat /proc/loadavg                     # 1min 5min 15min load, running/total procs, last PID
+ls /proc/1/                           # info about PID 1 (systemd)
+cat /proc/1/cmdline | tr '\\0' ' '    # command line of PID 1
+ 
+# Useful filesystem exploration
+find /etc -name "*.conf" 2>/dev/null | head -20    # all .conf files in /etc
+find /var/log -name "*.log" -mtime -1               # logs modified today
+find /opt -maxdepth 2 -type d                       # directories under /opt (2 levels deep)
+locate nginx.conf                                   # fast search (requires updatedb to be current)
+which nginx                                         # full path to nginx binary
+type systemctl                                      # where is this command coming from?
+
